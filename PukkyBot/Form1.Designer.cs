@@ -30,7 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.botController = new System.Windows.Forms.Timer(this.components);
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
@@ -42,6 +42,7 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
+            this.screenScraper = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // label1
@@ -54,10 +55,9 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "label1";
             // 
-            // timer1
+            // botController
             // 
-            this.timer1.Interval = 2000;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this.botController.Tick += new System.EventHandler(this.onBotUpdate);
             // 
             // label2
             // 
@@ -145,7 +145,7 @@
             this.test.TabIndex = 8;
             this.test.Text = "test";
             this.test.UseVisualStyleBackColor = true;
-            this.test.Click += new System.EventHandler(this.button2_Click);
+            this.test.Click += new System.EventHandler(this.TestButtonClick);
             // 
             // textBox1
             // 
@@ -177,6 +177,11 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.Button2_Click_1);
             // 
+            // screenScraper
+            // 
+            this.screenScraper.Interval = 1000;
+            this.screenScraper.Tick += new System.EventHandler(this.ScreenScraper_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -205,7 +210,7 @@
         #endregion
 
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Timer botController;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
@@ -217,6 +222,7 @@
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Timer screenScraper;
     }
 }
 
