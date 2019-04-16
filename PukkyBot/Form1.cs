@@ -21,7 +21,7 @@ namespace PukkyBot
     public partial class Form1 : Form
     {
         public static Random random = new Random();
-        private static Boolean isEnabled = false;
+        public static Bot activeBod = new AlbionBot();
 
         public Form1()
         {
@@ -32,9 +32,10 @@ namespace PukkyBot
         private void onBotUpdate(object sender, EventArgs e)
         {
             MouseSimulator.POINT lpPoint = MouseSimulator.getCurrentPos();
-            if (isEnabled)
+            label1.Text = "Pos: x:" + lpPoint.X + " y:" + lpPoint.Y;
+
+            if (botController.Enabled)
             {
-               
                 //MouseSimulator.MouseMove(486, 296);
                 //Thread.Sleep(1000);
                 //MouseSimulator.ClickLeftMouseButton();
@@ -44,7 +45,10 @@ namespace PukkyBot
 
         private void ScreenScraper_Tick(object sender, EventArgs e)
         {
-            ScreenHandler.getScreen();
+            if (botController.Enabled)
+            {
+                ScreenHandler.getScreen();
+            }
         }
 
         private void TestButtonClick(object sender, EventArgs e)
@@ -79,7 +83,10 @@ namespace PukkyBot
             }
         }
 
-        
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 
     

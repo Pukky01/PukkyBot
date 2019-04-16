@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace PukkyBot
 {
@@ -15,6 +16,8 @@ namespace PukkyBot
         public delegate int HookProc(int nCode, IntPtr wParam, IntPtr lParam);
         static HookProc MouseHookProcedure;
         private static Random random = new Random();
+        public static List<MouseClickEvent> recordedEvents = new List<MouseClickEvent>();
+        private static Stopwatch timeKeeper = new Stopwatch();
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
@@ -35,7 +38,16 @@ namespace PukkyBot
         static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
         private const int BM_CLICK = 0x00F5;
 
-
+        public struct MouseClickEvent
+        {
+            public int x;
+            public int y;
+            public float dTime;
+            public MouseClickEvent(int x, int y, float time)
+            {
+                this.x = x; this.y = y; this.dTime = time;
+            }
+        }
         [StructLayout(LayoutKind.Sequential)]
         struct INPUT
         {
@@ -147,6 +159,9 @@ namespace PukkyBot
 
         public static void startMouseRecording()
         {
+            timeKeeper.Reset();
+            
+            recordedEvents.Clear();
             isRecording = true;
             MouseHookProcedure = new HookProc(MouseHookProc);
             using (Process curProcess = Process.GetCurrentProcess())
@@ -158,6 +173,7 @@ namespace PukkyBot
 
         public static void stopMouseRecording()
         {
+            timeKeeper.Stop();
             isRecording = false;
             bool ret = UnhookWindowsHookEx(hHook);
             hHook = 0;
@@ -199,9 +215,16 @@ namespace PukkyBot
         {
             MouseHookStruct MyMouseHookStruct = (MouseHookStruct)
                 Marshal.PtrToStructure(lParam, typeof(MouseHookStruct));
-            Debug.WriteLine(wParam);
+            
             if (nCode >= 0 && MouseMessages.WM_LBUTTONDOWN == (MouseMessages)wParam)
-                Debug.WriteLine("clicked " + nCode);
+            {
+                if (!timeKeeper.IsRunning)
+                    timeKeeper.Start();
+
+                POINT p = getCurrentPos();
+                float dtime = timeKeeper.ElapsedMilliseconds - recordedEvents.Count > 0 ? recordedEvents[recordedEvents.Count-1].dTime : 0;
+                recordedEvents.Add(new MouseClickEvent(p.X, p.Y, dtime));
+            }
             return CallNextHookEx(hHook, nCode, wParam, lParam);
         }
 
@@ -209,6 +232,8 @@ namespace PukkyBot
         {
             POINT lpPoint;
             GetCursorPos(out lpPoint);
+            lpPoint.X -= ScreenHandler.window.Left;
+            lpPoint.Y -= ScreenHandler.window.Top;
             return lpPoint;
         }
     }

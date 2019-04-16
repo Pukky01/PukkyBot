@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace PukkyBot
 {
-    class AlbionBot
+    class AlbionBot : Bot
     {
+        public void decide()
+        {
+           
+        }
     }
 }

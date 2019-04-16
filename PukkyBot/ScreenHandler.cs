@@ -121,6 +121,13 @@ namespace PukkyBot
         {
             return green[x + y * width];
         }
+         
+        public static Boolean isInWindow(int x, int y)
+        {
+            return x > window.Left && x < window.Left + window.Width && y > window.Top && y < window.Top + window.Height;
+        }
+
+
 
     }
 }

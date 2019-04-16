@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace PukkyBot
 {
-    interface Bot
+    public interface Bot
     {
+        void decide();
     }
 }
