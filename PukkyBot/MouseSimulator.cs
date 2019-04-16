@@ -2,6 +2,8 @@
 using System.Drawing;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
+using System.Threading;
 
 namespace PukkyBot
 {
@@ -12,6 +14,7 @@ namespace PukkyBot
         public static Boolean isRecording = false;
         public delegate int HookProc(int nCode, IntPtr wParam, IntPtr lParam);
         static HookProc MouseHookProcedure;
+        private static Random random = new Random();
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
@@ -26,6 +29,12 @@ namespace PukkyBot
         public static extern int SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hInstance, int threadId);
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint SendInput(uint nInputs, ref INPUT pInputs, int cbSize);
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
+        [DllImport("user32.dll")]
+        static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
+        private const int BM_CLICK = 0x00F5;
+
 
         [StructLayout(LayoutKind.Sequential)]
         struct INPUT
@@ -93,40 +102,47 @@ namespace PukkyBot
             InputHardware
         }
 
-        public static void ClickLeftMouseButton()
+        public static void LeftClick(int x, int y)
         {
-            INPUT mouseDownInput = new INPUT();
-            mouseDownInput.type = SendInputEventType.InputMouse;
-            mouseDownInput.mkhi.mi.dwFlags = MouseEventFlags.MOUSEEVENTF_LEFTDOWN;
-            SendInput(1, ref mouseDownInput, Marshal.SizeOf(new INPUT()));
+            x += ScreenHandler.window.Left + random.Next(0, 2) * 2 - 1;
+            y += ScreenHandler.window.Top + random.Next(0, 2) * 2 - 1;
 
-            INPUT mouseUpInput = new INPUT();
-            mouseUpInput.type = SendInputEventType.InputMouse;
-            mouseUpInput.mkhi.mi.dwFlags = MouseEventFlags.MOUSEEVENTF_LEFTUP;
-            SendInput(1, ref mouseUpInput, Marshal.SizeOf(new INPUT()));
+            LinearSmoothMove(new Point(x, y), new TimeSpan(0, 0, 0, 1));
+
+            Cursor.Position = new System.Drawing.Point(x, y);
+            //  ClickOnPoint(ragnarok.MainWindowHandle, new Point(x, y));
+            mouse_event((int)(MouseEventFlags.MOUSEEVENTF_LEFTDOWN), 0, 0, 0, 0);
+            Thread.Sleep(25);
+            mouse_event((int)(MouseEventFlags.MOUSEEVENTF_LEFTUP), 0, 0, 0, 0);
+
         }
-        public static void ClickRightMouseButton()
+        public static void LinearSmoothMove(Point newPosition, TimeSpan duration)
         {
-            INPUT mouseDownInput = new INPUT();
-            mouseDownInput.type = SendInputEventType.InputMouse;
-            mouseDownInput.mkhi.mi.dwFlags = MouseEventFlags.MOUSEEVENTF_RIGHTDOWN;
-            SendInput(1, ref mouseDownInput, Marshal.SizeOf(new INPUT()));
+            POINT start;
+            GetCursorPos(out start);
 
-            INPUT mouseUpInput = new INPUT();
-            mouseUpInput.type = SendInputEventType.InputMouse;
-            mouseUpInput.mkhi.mi.dwFlags = MouseEventFlags.MOUSEEVENTF_RIGHTUP;
-            SendInput(1, ref mouseUpInput, Marshal.SizeOf(new INPUT()));
-        }
+            // Find the vector between start and newPosition
+            double deltaX = newPosition.X - start.X;
+            double deltaY = newPosition.Y - start.Y;
 
-        public static void MouseMove(int x, int y)
-        {
-            INPUT mouseDownInput = new INPUT();
-            mouseDownInput.type = SendInputEventType.InputMouse;
-            mouseDownInput.mkhi.mi.dwFlags = MouseEventFlags.MOUSEEVENTF_MOVE | MouseEventFlags.MOUSEEVENTF_ABSOLUTE ;
-            mouseDownInput.mkhi.mi.dx = x;
-            mouseDownInput.mkhi.mi.dy = y;
-            SendInput(1, ref mouseDownInput, Marshal.SizeOf(new INPUT()));
+            // start a timer
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
 
+            double timeFraction = 0.0;
+
+            do
+            {
+                timeFraction = (double)stopwatch.Elapsed.Ticks / duration.Ticks;
+                if (timeFraction > 1.0)
+                    timeFraction = 1.0;
+
+                PointF curPoint = new PointF((float)(start.X + timeFraction * deltaX),
+                                             (float)(start.Y + timeFraction * deltaY));
+                Cursor.Position = Point.Round(curPoint);
+                Thread.Sleep(1);
+            } while (timeFraction < 1.0);
+            Thread.Sleep(200);
         }
 
         public static void startMouseRecording()
@@ -187,6 +203,13 @@ namespace PukkyBot
             if (nCode >= 0 && MouseMessages.WM_LBUTTONDOWN == (MouseMessages)wParam)
                 Debug.WriteLine("clicked " + nCode);
             return CallNextHookEx(hHook, nCode, wParam, lParam);
+        }
+
+        public static POINT getCurrentPos()
+        {
+            POINT lpPoint;
+            GetCursorPos(out lpPoint);
+            return lpPoint;
         }
     }
 }
