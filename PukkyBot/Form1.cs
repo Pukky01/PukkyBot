@@ -23,10 +23,14 @@ namespace PukkyBot
         public static Random random = new Random();
         public static Bot activeBod = new AlbionBot();
 
+        public static ComboBox recordedEvents;
+
         public Form1()
         {
             InitializeComponent();
+            recordedEvents = comboBox1;
             ScreenHandler.hookProcess("Notepad");
+            MouseSimulator.LoadRecording();
         }
 
         private void onBotUpdate(object sender, EventArgs e)
@@ -86,6 +90,16 @@ namespace PukkyBot
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void ReplayButton_Click(object sender, EventArgs e)
+        {
+            MouseSimulator.replay();
+        }
+
+        private void SaveRecordButton_Click(object sender, EventArgs e)
+        {
+            MouseSimulator.SaveRecording(recordingName.Text);
         }
     }
 

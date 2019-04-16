@@ -9,7 +9,6 @@ namespace PukkyBot
     class ScreenHandler
     {
         //local variables
-        static Bitmap _bitmap;
         public static Process targetProcess = null;
         public static int width = 800;
         public static int height = 600;
@@ -68,11 +67,13 @@ namespace PukkyBot
             }
             catch (Exception e)
             {
-
+                Debug.WriteLine(e.GetBaseException());
             }
         }
 
+#pragma warning disable 0649
         static IntPtr dc;
+#pragma warning restore 0649
         public static Color GetColorAt(int x, int y)
         {
             int a = (int)GetPixel(dc, x, y);
@@ -126,7 +127,6 @@ namespace PukkyBot
         {
             return x > window.Left && x < window.Left + window.Width && y > window.Top && y < window.Top + window.Height;
         }
-
 
 
     }

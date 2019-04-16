@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Threading;
 using System.Collections.Generic;
+using System.IO;
 
 namespace PukkyBot
 {
@@ -18,6 +19,7 @@ namespace PukkyBot
         private static Random random = new Random();
         public static List<MouseClickEvent> recordedEvents = new List<MouseClickEvent>();
         private static Stopwatch timeKeeper = new Stopwatch();
+        private static Dictionary<string, List<MouseClickEvent>> listOfRecords = new Dictionary<string, List<MouseClickEvent>>();
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
@@ -66,6 +68,66 @@ namespace PukkyBot
             [FieldOffset(0)]
             public HARDWAREINPUT hi;
         }
+
+        internal static void LoadRecording()
+        {
+            if (!File.Exists("recordings.txt"))
+                return;
+
+            using (StreamReader sr = new StreamReader("recordings.txt"))
+            {
+                string line;
+                while ( (line = sr.ReadLine()) != null) {
+                    List<MouseClickEvent> loadedEvents = new List<MouseClickEvent>();
+                    string[] events = line.Split('|');
+                    for (int i = 1; i < events.Length; i++)
+                    {
+                        string[] par = events[i].Split(';');
+                        if (par.Length > 1)
+                            loadedEvents.Add(new MouseClickEvent(int.Parse(par[0]), int.Parse(par[1]), float.Parse(par[2])));
+                    }
+                    string name = events[0];
+                    listOfRecords.Add(name, loadedEvents);
+                    Form1.recordedEvents.Items.Add(name);
+                }
+            }
+        }
+
+        internal static void SaveRecording(string text)
+        {
+            if (!File.Exists("recordings.txt"))
+                File.Create("recordings.txt");
+            text += "|";
+            foreach (MouseClickEvent e in recordedEvents)
+                text += e.x + ";" + e.y + ";" + e.dTime + "|";
+
+            using (StreamWriter sw = File.AppendText("recordings.txt"))
+                sw.WriteLine(text);
+
+            listOfRecords[text] = new List<MouseClickEvent>();
+            foreach (MouseClickEvent e in recordedEvents)
+                listOfRecords[text].Add(e);
+
+            Form1.recordedEvents.Items.Add(text);
+        }
+
+        internal static void replay()
+        {
+            List<MouseClickEvent> replaylist;
+
+            if (Form1.recordedEvents.Text == "Last Recorded")
+                replaylist = recordedEvents;
+            else
+                replaylist = listOfRecords[Form1.recordedEvents.Text];
+
+               for (int i = 0; i < replaylist.Count; i++)
+                {
+                    Thread.Sleep((int)replaylist[i].dTime);
+                    LeftClick(replaylist[i].x, replaylist[i].y);
+                }
+
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         struct KEYBDINPUT
         {
@@ -82,6 +144,8 @@ namespace PukkyBot
             public short wParamL;
             public short wParamH;
         }
+
+        #pragma warning disable 0649
         struct MouseInputData
         {
             public int dx;
@@ -91,6 +155,7 @@ namespace PukkyBot
             public uint time;
             public IntPtr dwExtraInfo;
         }
+        #pragma warning restore 0649
         [Flags]
         enum MouseEventFlags : uint
         {
@@ -218,12 +283,17 @@ namespace PukkyBot
             
             if (nCode >= 0 && MouseMessages.WM_LBUTTONDOWN == (MouseMessages)wParam)
             {
-                if (!timeKeeper.IsRunning)
-                    timeKeeper.Start();
+                POINT p = getCurrentAbsPos();
+                if (ScreenHandler.isInWindow(p.X, p.Y))
+                {
+                    p = getCurrentPos();
+                    if (!timeKeeper.IsRunning)
+                        timeKeeper.Start();
 
-                POINT p = getCurrentPos();
-                float dtime = timeKeeper.ElapsedMilliseconds - recordedEvents.Count > 0 ? recordedEvents[recordedEvents.Count-1].dTime : 0;
-                recordedEvents.Add(new MouseClickEvent(p.X, p.Y, dtime));
+                    float dtime = timeKeeper.ElapsedMilliseconds - (recordedEvents.Count > 0 ? recordedEvents[recordedEvents.Count - 1].dTime : 0);
+                    Debug.WriteLine("dtime = " + dtime);
+                    recordedEvents.Add(new MouseClickEvent(p.X, p.Y, dtime));
+                }
             }
             return CallNextHookEx(hHook, nCode, wParam, lParam);
         }
@@ -234,6 +304,13 @@ namespace PukkyBot
             GetCursorPos(out lpPoint);
             lpPoint.X -= ScreenHandler.window.Left;
             lpPoint.Y -= ScreenHandler.window.Top;
+            return lpPoint;
+        }
+
+        public static POINT getCurrentAbsPos()
+        {
+            POINT lpPoint;
+            GetCursorPos(out lpPoint);
             return lpPoint;
         }
     }

@@ -39,6 +39,10 @@
             this.button2 = new System.Windows.Forms.Button();
             this.screenScraper = new System.Windows.Forms.Timer(this.components);
             this.listBox1 = new System.Windows.Forms.ListBox();
+            this.replayButton = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.SaveRecordButton = new System.Windows.Forms.Button();
+            this.recordingName = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -133,11 +137,55 @@
             this.listBox1.Size = new System.Drawing.Size(202, 148);
             this.listBox1.TabIndex = 12;
             // 
+            // replayButton
+            // 
+            this.replayButton.Location = new System.Drawing.Point(331, 196);
+            this.replayButton.Margin = new System.Windows.Forms.Padding(4);
+            this.replayButton.Name = "replayButton";
+            this.replayButton.Size = new System.Drawing.Size(100, 28);
+            this.replayButton.TabIndex = 13;
+            this.replayButton.Text = "Replay";
+            this.replayButton.UseVisualStyleBackColor = true;
+            this.replayButton.Click += new System.EventHandler(this.ReplayButton_Click);
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Items.AddRange(new object[] {
+            "Last Recorded"});
+            this.comboBox1.Location = new System.Drawing.Point(310, 231);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 24);
+            this.comboBox1.TabIndex = 14;
+            this.comboBox1.Text = "Last Recorded";
+            // 
+            // SaveRecordButton
+            // 
+            this.SaveRecordButton.Location = new System.Drawing.Point(203, 227);
+            this.SaveRecordButton.Margin = new System.Windows.Forms.Padding(4);
+            this.SaveRecordButton.Name = "SaveRecordButton";
+            this.SaveRecordButton.Size = new System.Drawing.Size(100, 28);
+            this.SaveRecordButton.TabIndex = 15;
+            this.SaveRecordButton.Text = "Save Record";
+            this.SaveRecordButton.UseVisualStyleBackColor = true;
+            this.SaveRecordButton.Click += new System.EventHandler(this.SaveRecordButton_Click);
+            // 
+            // recordingName
+            // 
+            this.recordingName.Location = new System.Drawing.Point(203, 262);
+            this.recordingName.Name = "recordingName";
+            this.recordingName.Size = new System.Drawing.Size(100, 22);
+            this.recordingName.TabIndex = 16;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(444, 246);
+            this.ClientSize = new System.Drawing.Size(449, 296);
+            this.Controls.Add(this.recordingName);
+            this.Controls.Add(this.SaveRecordButton);
+            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.replayButton);
             this.Controls.Add(this.listBox1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.test);
@@ -167,6 +215,10 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Timer screenScraper;
         private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.Button replayButton;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Button SaveRecordButton;
+        private System.Windows.Forms.TextBox recordingName;
     }
 }
 
